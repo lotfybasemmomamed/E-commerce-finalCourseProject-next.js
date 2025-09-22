@@ -15,8 +15,8 @@ export default function NavBar() {
     { to: "/brands", label: "Brands" },
   ];
   return (
-    <nav className="bg-gray-100 border-gray-200 dark:bg-gray-900">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <nav className="bg-gray-100 border-gray-200 dark:bg-gray-900 ">
+      <div className="container max-w-screen-xl  flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex gap-8 items-center">
           <Link href="/">
             <Image
@@ -63,7 +63,7 @@ export default function NavBar() {
             </div>
           </div> 
         </div>
-        <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+        <div className="flex md:order-2 space-x-3 md:hidden md:space-x-0 rtl:space-x-reverse">
           <span className="hidden md:flex items-center gap-x-6 px-4 py-2 rounded-lg">
             <i className="fa-brands fa-instagram hover:text-pink-500 cursor-pointer"></i>
             <i className="fa-brands fa-facebook hover:text-blue-500 cursor-pointer"></i>
@@ -78,7 +78,7 @@ export default function NavBar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg  lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
             aria-controls="navbar-cta"
             aria-expanded={isOpen}
           >

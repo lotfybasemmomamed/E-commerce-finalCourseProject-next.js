@@ -1,13 +1,11 @@
-// components/Footer.tsx
 "use client";
-import Image from "next/image";
-import Link from "next/link";
+
 import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 border-t border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <footer className="bg-gray-100 border-t border-gray-200 ">
+      <div className="max-w-6xl mx-auto px-4 py-8 container">
         <div className="flex flex-col  items-start justify-between gap-6">
           <div>
             <h2 className="  text-gray-800">
