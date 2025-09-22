@@ -2,6 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { signIn } from "next-auth/react";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { loginSchema } from "../_schemas/loginSchema";
 import { registerSchema } from "../_schemas/RegisterSchema";
 import z from "zod";
+import ErrorMessage from "./puplicComponents/ErrorMesage";
 
 export default function AuthForm({ type }: { type: string }) {
   const schema = type === "login" ? loginSchema : registerSchema;
@@ -28,7 +31,21 @@ export default function AuthForm({ type }: { type: string }) {
     resolver: zodResolver(schema),
     defaultValues: _defaultValue,
   });
-  function onSubmit() {}
+  async function onSubmit(data: z.infer<typeof loginSchema>) {
+    if(type==="login"){
+ const result = await signIn("credentials", {
+    redirect: false,
+    email: data.email,
+    password: data.password,
+    
+  });
+    if (result?.error) {
+    return <ErrorMessage message={result.error}/>
+  } else {
+    window.location.pathname = "/";
+  }
+    }
+  }
   return (
     <div className="container p-5 rounded max-w-[80%] md:my-9 m-5 bg-gray-100">
 
