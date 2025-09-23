@@ -13,7 +13,7 @@ export default function ErrorMessage({ message }: { message: string }) {
     <>
       {isOpen && (
         <>
-       <div className="text-red-500 fixed top-[75px] left-1/2 -translate-x-1/2  z-[999999] bg-gray-100 p-5 rounded shadow-lg">
+       <div className="text-green-500 fixed top-[75px] left-1/2 -translate-x-1/2  z-[999999] bg-gray-100 p-5 rounded shadow-lg">
    {message}
 </div>
         </>

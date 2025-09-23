@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "./_componnents/puplicComponents/NavBar";
 import Footer from "./_componnents/puplicComponents/Footer";
 import Session_Provider from "./_utilites/providers/SessionProvider";
+import ClientWrapper from "./_utilites/providers/ClientWrapper";
 
 
 const geistSans = Geist({
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body
         className={` ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <ClientWrapper>
         <Session_Provider>
         <div >
           <NavBar /> 
@@ -38,6 +40,7 @@ export default function RootLayout({
           <Footer />
         </div>
         </Session_Provider>
+        </ClientWrapper>
       </body>
     </html>
   );
