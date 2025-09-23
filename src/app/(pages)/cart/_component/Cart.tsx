@@ -4,6 +4,7 @@ import Loading from "@/app/_componnents/puplicComponents/Loading";
 import { RootCart } from "@/app/_types/cart";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import CartItemQuentity from "./CartItemQuantity";
 
 
 
@@ -41,25 +42,7 @@ console.log(cartData)
   if (isError) return <ErrorMessage message={error.message} />;
  
 
-//   const handleIncrease = (id: number) => {
-//     setCartItems(
-//       cartItems.map((item) =>
-//         item.id === id ? { ...item, qty: item.qty + 1 } : item
-//       )
-//     );
-//   };
 
-//   const handleDecrease = (id: number) => {
-//     setCartItems(
-//       cartItems.map((item) =>
-//         item.id === id && item.qty > 1 ? { ...item, qty: item.qty - 1 } : item
-//       )
-//     );
-//   };
-
-//   const handleRemove = (id: number) => {
-//     setCartItems(cartItems.filter((item) => item.id !== id));
-//   };
 const total =cartData?.data?.totalCartPrice
 
   return (
@@ -84,23 +67,12 @@ const total =cartData?.data?.totalCartPrice
                 />
                 <div className="flex-1">
                   <h2 className="font-medium">{item.product.title}</h2>
-                  <p className="text-gray-500">${item.price}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <button
-                    //   onClick={() => handleDecrease(item.id)}
-                      className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
-                    >
-                      -
-                    </button>
-                    <span>{item.count}</span>
-                    <button
-                    //   onClick={() => handleIncrease(item.id)}
-                      className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
-                    >
-                      +
-                    </button>
-                  </div>
+                  <p className="text-gray-500">{item.price} EGP</p>
+
+                  <CartItemQuentity initialCount={item.count} productId={item.product._id}/>
+
                 </div>
+
                 <div className="text-right">
                   <p className="font-medium">
                     ${(item.price * item.count).toFixed(2)}

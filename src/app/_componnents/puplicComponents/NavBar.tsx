@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import logo from "../../../../public/images/freshcart-logo.svg";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import CartItemQuentity from "@/app/(pages)/cart/_component/CartItemQuantity";
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathName = usePathname();
@@ -263,21 +264,7 @@ function CartWishlistIcons() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{item.name}</p>
                     <p className="text-xs text-gray-500">${item.price}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <button
-                        onClick={() => handleDecrease(item.id)}
-                        className="px-2 bg-gray-200 rounded"
-                      >
-                        -
-                      </button>
-                      <span>{item.qty}</span>
-                      <button
-                        onClick={() => handleIncrease(item.id)}
-                        className="px-2 bg-gray-200 rounded"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <CartItemQuentity count={item.qty}/>
                   </div>
                   <button
                     onClick={() => handleRemoveCart(item.id)}
