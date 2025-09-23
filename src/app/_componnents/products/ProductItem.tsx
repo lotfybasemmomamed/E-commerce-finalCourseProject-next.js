@@ -47,7 +47,7 @@ export default function ProductItem({ product }: { product: Product }) {
       </div>
 
       <div className="flex justify-between items-center text-2xl mt-2">
-        <AddToCartBtn width="w-[140px]" />
+        <AddToCartBtn productId={product._id} width="w-[140px]" />
         <i className="fa-regular fa-heart text-2xl text-gray-600 hover:fa-solid hover:text-red-500 cursor-pointer"></i>
       </div>
     </div>
