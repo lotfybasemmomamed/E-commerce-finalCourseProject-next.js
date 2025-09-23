@@ -13,7 +13,7 @@ import "swiper/css";
 import ProductList from "../_componnents/products/ProductList";
 import { getAllProducts } from "../_apis/productsApi";
 import { ProductRoot } from "../_types/products";
-import ClientWrapper from "../_utilites/ClientWrapper";
+import ClientWrapper from "../_utilites/providers/ClientWrapper";
 import Loading from "../_componnents/puplicComponents/Loading";
 import ErrorMesage from "../_componnents/puplicComponents/ErrorMesage";
 
@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <ClientWrapper>
       <div className="container">
-        <div className="my-5">
+        <div className="mb-5 mt-24">
           <SWIPER />
         </div>
         <div>
