@@ -1,21 +1,24 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import axios from "axios";
+import Credentials from "next-auth/providers/credentials";
 
-export const authOptions = {
+export const authOptions:NextAuthOptions = {
+    pages:{
+        signIn:"/login"
+    },
   providers: [
-    CredentialsProvider({
+    Credentials({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: {},
+        password: {},
       },
       async authorize(credentials) {
         if (!credentials) return null;
 
         try {
           const { data } = await axios.post(
-            "https://ecommerce.routemisr.com/api/v1/auth/signin",
+            `${process.env.API}/auth/signin`,
             {
               email: credentials.email,
               password: credentials.password,
@@ -25,8 +28,9 @@ export const authOptions = {
           const { user, token, message } = data;
 
           if (message === "success" && user && token) {
+            const decode=JSON.parse(Buffer.from(token.split('.')[1],'base64').toString())
             return {
-              id: user.email,
+              id: decode.id,
               name: user.name,
               email: user.email,
               role: user.role,
@@ -41,19 +45,18 @@ export const authOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.accessToken;
-        token.role = user.role;
+        token.user = user.user;
+        token.token = user.token;
+        
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.token = token.accessToken;
-      session.user.role = token.role;
+      session.user = token.user;
       return session;
     },
   },
