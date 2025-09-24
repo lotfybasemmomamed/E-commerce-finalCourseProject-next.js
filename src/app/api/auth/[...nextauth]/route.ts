@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions,User  } from "next-auth";
 import axios from "axios";
 import Credentials from "next-auth/providers/credentials";
 
@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
         email: {},
         password: {},
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         if (!credentials) return null;
 
         try {
@@ -30,6 +30,7 @@ export const authOptions: NextAuthOptions = {
             );
             return {
               token: token,
+              id: decode.id,
               user: {
                 name: user.name,
                 email: user.email,

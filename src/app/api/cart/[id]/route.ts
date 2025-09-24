@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { getToken } from "next-auth/jwt";
-import  { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
 const baseUrl = "https://ecommerce.routemisr.com/api/v1";
 
-
-
-
-
-
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getToken({ req: request });
@@ -21,8 +16,10 @@ export async function PUT(
     }
 
     const body = await request.json();
+    
+    const resolvedParams = await params;
 
-    const res = await axios.put(`${baseUrl}/cart/${params.id}`, body, {
+    const res = await axios.put(`${baseUrl}/cart/${resolvedParams.id}`, body, {
       headers: {
         token: token.token as string,
         "Content-Type": "application/json",
@@ -38,4 +35,3 @@ export async function PUT(
     );
   }
 }
-

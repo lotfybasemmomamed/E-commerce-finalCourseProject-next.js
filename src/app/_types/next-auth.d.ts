@@ -1,3 +1,4 @@
+/*eslint-disable */
 import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 
 declare module "next-auth" {

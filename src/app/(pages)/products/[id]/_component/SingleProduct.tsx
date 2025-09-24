@@ -85,7 +85,7 @@ export default function SingleProduct({id}:{id:string}) {
         </div>
 
         <div className="flex items-center gap-4 mt-4">
-          <AddToCartBtn width="w-full" />
+          <AddToCartBtn productId={product?._id||""} width="w-full" />
         </div>
       </div>
     </div>

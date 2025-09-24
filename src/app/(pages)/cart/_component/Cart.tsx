@@ -56,7 +56,7 @@ export default function Cart() {
   if (isLoading) return <Loading />;
   if (isError) return <ErrorMessage message={error.message} />;
 
-  const total = cartData?.data?.totalCartPrice;
+  const total = cartData?.data?.totalCartPrice ||0;
 
   return (
     <>
@@ -114,7 +114,7 @@ export default function Cart() {
             <h2 className="text-lg font-bold mb-4">Order Summary</h2>
             <div className="flex justify-between mb-2">
               <span>Subtotal</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${total?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-2">
               <span>Shipping</span>

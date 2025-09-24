@@ -33,20 +33,20 @@ export default function CartItemQuantity({ productId, initialCount }: { productI
     <div className="flex items-center gap-3 mt-2">
       <button 
         onClick={handleDecrease} 
-        disabled={mutation.isLoading || count <= 1} 
+        disabled={mutation.isPending || count <= 1} 
         className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
       >
-        {mutation.isLoading ? "..." : "-"}
+        {mutation.isPending ? "..." : "-"}
       </button>
 
-      <span>{mutation.isLoading ? <i className="fa-solid fa-spin fa-spinner"></i> : count}</span>
+      <span>{mutation.isPending ? <i className="fa-solid fa-spin fa-spinner"></i> : count}</span>
 
       <button 
         onClick={handleIncrease} 
-        disabled={mutation.isLoading} 
+        disabled={mutation.isPending} 
         className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
       >
-        {mutation.isLoading ? "..." : "+"}
+        {mutation.isPending ? "..." : "+"}
       </button>
     </div>
   );

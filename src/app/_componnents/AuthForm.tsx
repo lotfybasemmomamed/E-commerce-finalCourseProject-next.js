@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,8 +89,9 @@ export default function AuthForm({ type }: { type: string }) {
           {type === "register" && (
             <>
               <FormField
-                control={form.control}
+                // control={form.control }
                 name="name"
+                
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name:</FormLabel>
@@ -138,9 +140,9 @@ export default function AuthForm({ type }: { type: string }) {
             <>
               {/* repassword input */}
               <FormField
-                control={form.control}
+                // control={form.control}
                 name="rePassword"
-                type="password"
+                // type="password"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Repassword:</FormLabel>
@@ -154,7 +156,7 @@ export default function AuthForm({ type }: { type: string }) {
               />
               {/* phone input */}
               <FormField
-                control={form.control}
+                // control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
@@ -176,7 +178,7 @@ export default function AuthForm({ type }: { type: string }) {
             </Button>
             {type === "login" && (
               <p className="mt-2 text-sm text-gray-600">
-                Don't have an account?
+                 you have an account?
                 <Link
                   href="/register"
                   className="text-main font-medium hover:underline"
