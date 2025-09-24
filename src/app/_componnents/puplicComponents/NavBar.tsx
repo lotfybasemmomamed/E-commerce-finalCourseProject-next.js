@@ -23,11 +23,11 @@ export default function NavBar() {
     const [show, setShow] = useState(false);
 
   const pathName = usePathname();
-  const links = [
-    { to: "/products", label: "Products" },
-    { to: "/categories", label: "Categories" },
-    { to: "/brands", label: "Brands" },
-  ];
+  // const links = [
+  //   // { to: "/products", label: "Products" },
+  //   // { to: "/categories", label: "Categories" },
+  //   // { to: "/brands", label: "Brands" },
+  // ];
   const { data: session, status } = useSession();
 
   console.log("session", session);
@@ -50,7 +50,7 @@ export default function NavBar() {
             } fixed top-16 left-0 right-0 bg-gray-100 dark:bg-gray-900 z-50 flex-col p-4 md:relative md:top-auto md:left-auto md:right-auto md:bg-transparent md:dark:bg-transparent md:z-auto md:p-0 md:flex md:flex-row md:items-center`}
             id="navbar-cta"
           >
-            <ul className="flex flex-col w-full md:flex-row md:space-x-6 rtl:space-x-reverse md:w-auto">
+            {/* <ul className="flex flex-col w-full md:flex-row md:space-x-6 rtl:space-x-reverse md:w-auto">
               {links.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -66,7 +66,7 @@ export default function NavBar() {
                   </Link>
                 </li>
               ))}
-            </ul>
+            </ul> */}
             {/* social & login icons  in moboile */}
             <div className="flex flex-col gap-4 mt-4 md:hidden">
               <span className="flex items-center gap-x-4 justify-center">

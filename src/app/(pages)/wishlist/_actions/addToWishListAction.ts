@@ -7,8 +7,11 @@ import { NextResponse } from "next/server";
 
 export default async function addToWishListAction(productId:string){
      const token = await getTokenValue();
-     if (!token)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    
+      if (!token){
+       NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+       return
+    }
     const res = await addToWhishList(productId, token);
     return res
 

@@ -4,6 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import addToVCartAction from "../_actions/addToCartAction";
 import ErrorMessage from "@/app/_componnents/puplicComponents/ErrorMesage";
 import SuccessMessage from "@/app/_componnents/puplicComponents/SuccessMessage";
+type ApiError = {
+  error: string;
+};
 
 export default function AddToCartBtn({
   productId,
@@ -21,6 +24,8 @@ export default function AddToCartBtn({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cartItems"] });
     },
+ 
+    
    
   });
 
