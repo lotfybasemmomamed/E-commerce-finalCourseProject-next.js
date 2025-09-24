@@ -9,8 +9,12 @@ import { Button } from "@/components/ui/button";
 import CartItemQuentity from "@/app/(pages)/cart/_component/CartItemQuantity";
 import { RootCart } from "@/app/_types/cart";
 import axios, { AxiosError } from "axios";
-import { useQuery,useQueryClient,useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import removeCartItemAction from "@/app/(pages)/cart/_actions/removeCartItemAction";
+import { WishListRoot } from "@/app/_types/wishlist";
+import SuccessMessage from "./SuccessMessage";
+import ErrorMessage from "./ErrorMesage";
+import removeWishListItemAction from "@/app/(pages)/wishlist/_actions/removeWishListItemAction";
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -159,13 +163,8 @@ interface ApiError {
   error?: string;
 }
 function CartWishlistIcons() {
-  type Item = {
-    id: number;
-    name: string;
-    image: string;
-    price: number;
-    qty: number;
-  };
+   const [showCart, setShowCart] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
   //get cart items
   const {
     data: cartData,
@@ -193,51 +192,78 @@ function CartWishlistIcons() {
     refetchOnWindowFocus: false,
   });
 
- // delete cart item
-   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // delete cart item
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-   const queryClient = useQueryClient();
-  const { mutate:deletedMutate, isPending:isDeletedPending, isSuccess:isDeletedSuccessed, error:deletedError } = useMutation({
+  const queryClient = useQueryClient();
+  const {
+    mutate: deletedMutate,
+    isPending: isDeletedPending,
+    isSuccess: isDeletedSuccessed,
+    error: deletedError,
+  } = useMutation({
     mutationFn: removeCartItemAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cartItems"] });
     },
   });
 
-  const [wishlistItems, setWishlistItems] = useState<Item[]>([
-    {
-      id: 1,
-      name: "Wishlist 1",
-      image: "/images/slider-image-3.jpeg",
-      price: 300,
-      qty: 1,
+  // delete cart item
+  const [deletingWishListItemId, setDeletingWishListItemId] = useState<string | null>(null);
+
+  const _queryClient = useQueryClient();
+  const {
+    mutate: deletedWishListItemMutate,
+    isPending: isDeletedWishListItemPending,
+    isSuccess: isDeletedWishListItemSuccessed,
+    error: deletedWishListItemError,
+  } = useMutation({
+    mutationFn: removeWishListItemAction,
+    onSuccess: () => {
+      _queryClient.invalidateQueries({ queryKey: ["wishItems"] });
     },
-    {
-      id: 1,
-      name: "Wishlist 1",
-      image: "/images/slider-image-3.jpeg",
-      price: 300,
-      qty: 1,
+  });
+
+  //get wishlist items
+  const {
+    data: wishItems,
+    isLoading: isWishListLoading,
+    isError: isWishListError,
+    error: WishListError,
+  } = useQuery<WishListRoot>({
+    queryKey: ["wishItems"],
+
+    queryFn: async () => {
+      try {
+        const res = await axios.get("/api/wishlist", { withCredentials: true });
+        console.log("wishitems", res.data);
+        return res.data;
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          console.log("wishitems err", err);
+
+          const apiError = err as AxiosError<ApiError>;
+          throw new Error(
+            apiError.response?.data?.error ||
+              apiError.message ||
+              "Unknown error"
+          );
+        }
+        throw new Error("Unknown error");
+      }
     },
-    {
-      id: 1,
-      name: "Wishlist 1",
-      image: "/images/slider-image-3.jpeg",
-      price: 300,
-      qty: 1,
-    },
-  ]);
-
-  const [showCart, setShowCart] = useState(false);
-  const [showWishlist, setShowWishlist] = useState(false);
+    refetchOnWindowFocus: false,
+  });
 
 
-
-  const handleRemoveWishlist = (id: number) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id));
-  };
+ 
 
   return (
+    <>
+   {isDeletedSuccessed&&<SuccessMessage message="product deleted successfully"/>}
+   {deletedError&&<ErrorMessage message={deletedError.message}/>}
+   {isDeletedWishListItemSuccessed&&<SuccessMessage message="product deleted successfully"/>}
+   {deletedWishListItemError&&<ErrorMessage message={deletedWishListItemError.message}/>}
     <div className="flex items-center gap-6 relative">
       <div
         className="relative"
@@ -247,59 +273,64 @@ function CartWishlistIcons() {
         <Link href="/cart" className="relative">
           <i className="fa-solid fa-cart-shopping text-xl cursor-pointer"></i>
           <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full px-1">
-            {cartData?.data.products?.length }
+            {cartData?.data.products?.length}
           </span>
         </Link>
         {showCart && (
-          
-           <div className="absolute right-0">
-          <div className=" mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
-            {cartData?.data?.products &&cartData?.data.products?.length > 0 ? (
-              cartData?.data.products?.map((item) => (
-                <div
-                  key={item.product._id}
-                  className="flex items-center gap-3 p-2 border-b last:border-0"
-                >
-                  <Image
-                    src={item.product.imageCover}
-                    alt={item.product.title}
-                    width={40}
-                    height={40}
-                    className="rounded"
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium truncate max-w-[200px]">{item.product.title}</p>
-                    <p className="text-xs text-gray-500">${item.price}</p>
-                    <CartItemQuentity
-                      initialCount={item.count}
-                      productId={item.product._id}
-                    />
-                  </div>
-                  <button
-                     onClick={() => {
-                      setDeletingId(item.product._id)
-                      deletedMutate(item.product._id)
-                    }}
-                    className="text-red-500 hover:text-red-700"
+          <div className="absolute right-0">
+            <div className=" mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
+              {cartData?.data?.products &&
+              cartData?.data.products?.length > 0 ? (
+                cartData?.data.products?.map((item) => (
+                  <div
+                    key={item.product._id}
+                    className="flex items-center gap-3 p-2 border-b last:border-0"
                   >
-                  {isDeletedPending&&item.product._id===deletingId?<i className="fa-solid fa-spin fa-spinner"></i>:<i className="fa-solid fa-trash"></i>}  
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-sm">No items in cart</p>
-            )}
-            <Link
-              href="/cart"
-              className="block text-center bg-main hover:bg-green-600 text-white py-2 rounded mt-2"
-            >
-              View Cart
-            </Link>
+                    <Image
+                      src={item.product.imageCover}
+                      alt={item.product.title}
+                      width={40}
+                      height={40}
+                      className="rounded"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium truncate max-w-[200px]">
+                        {item.product.title}
+                      </p>
+                      <p className="text-xs text-gray-500">${item.price}</p>
+                      <CartItemQuentity
+                        initialCount={item.count}
+                        productId={item.product._id}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setDeletingId(item.product._id);
+                        deletedMutate(item.product._id);
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      {isDeletedPending && item.product._id === deletingId ? (
+                        <i className="fa-solid fa-spin fa-spinner"></i>
+                      ) : (
+                        <i className="fa-solid fa-trash"></i>
+                      )}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-sm">No items in cart</p>
+              )}
+              <Link
+                href="/cart"
+                className="block text-center bg-main hover:bg-green-600 text-white py-2 rounded mt-2"
+              >
+                View Cart
+              </Link>
+            </div>
           </div>
-           </div> 
         )}
       </div>
-     
 
       <div
         className="relative"
@@ -309,50 +340,57 @@ function CartWishlistIcons() {
         <Link href="/wishlist" className="relative">
           <i className="fa-solid fa-heart text-xl cursor-pointer"></i>
           <span className="absolute -top-2 -right-3 bg-blue-500 text-white text-xs rounded-full px-1">
-            {wishlistItems.length}
+            {wishItems?.data.length}
           </span>
         </Link>
         {showWishlist && (
           <div className="absolute right-0">
-          <div className="mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
-            {wishlistItems.length > 0 ? (
-              wishlistItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-2 border-b last:border-0"
-                >
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={40}
-                    height={40}
-                    className="rounded"
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-gray-500">${item.price}</p>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveWishlist(item.id)}
-                    className="text-red-500 hover:text-red-700"
+            <div className="mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
+              {wishItems?.data && wishItems.data.length > 0 ? (
+                wishItems.data.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 p-2 border-b last:border-0"
                   >
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-sm">No items in wishlist</p>
-            )}
-            <Link
-              href="/wishlist"
-              className="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded mt-2"
-            >
-              View Wishlist
-            </Link>
-          </div>
+                    <Image
+                      src={item.imageCover}
+                      alt={item.title}
+                      width={40}
+                      height={40}
+                      className="rounded"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium truncate max-w-[200px]">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-gray-500">${item.price}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setDeletingWishListItemId(item._id)
+                        deletedWishListItemMutate(item.id)
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      {deletingWishListItemId===item._id&&isDeletedWishListItemPending?<i className="fa-solid fa-spin fa-spinner"></i>:<i className="fa-solid fa-trash"></i>}
+                      
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-sm">No items in wishlist</p>
+              )}
+              <Link
+                href="/wishlist"
+                className="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded mt-2"
+              >
+                View Wishlist
+              </Link>
+            </div>
           </div>
         )}
       </div>
     </div>
+     </>
   );
 }

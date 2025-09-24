@@ -43,9 +43,9 @@ export default function Cart() {
     },
     refetchOnWindowFocus: false,
   });
+
   //delete cart item
   const queryClient = useQueryClient();
-
   const { mutate:deletedMutate, isPending:isDeletedPending, isSuccess:isDeletedSuccessed, error:deletedError } = useMutation({
     mutationFn: removeCartItemAction,
     onSuccess: () => {
@@ -130,7 +130,7 @@ export default function Cart() {
           </div>
         </div>
       ) : (
-        <p className="text-center text-lg min-h-[90vh]">
+        <p className="text-center text-lg min-h-[60vh] bg-gray-100 flex justify-center items-center">
           Your cart is empty <i className="fa-solid fa-cart-shopping"></i>
         </p>
       )}

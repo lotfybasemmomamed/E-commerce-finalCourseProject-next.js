@@ -3,7 +3,7 @@ import axios from "axios";
 const baseUrl = "https://ecommerce.routemisr.com/api/v1";
 
 
-export const getWhishlistItems = async (token:string) => {
+export const getWishlistItems = async (token:string) => {
 
   return axios.get(
     `${baseUrl}/wishlist`,

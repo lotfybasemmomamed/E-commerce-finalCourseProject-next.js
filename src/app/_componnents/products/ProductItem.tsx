@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import Image from "next/image";
 import React from "react";
 import { Product } from "@/app/_types/products";
@@ -6,10 +6,27 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import AddToCartBtn from "@/app/(pages)/cart/_component/AddToCartBtn";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import SuccessMessage from "../puplicComponents/SuccessMessage";
+import ErrorMessage from "../puplicComponents/ErrorMesage";
+import addToWishListAction from "@/app/(pages)/wishlist/_actions/addToWishListAction";
 
 export default function ProductItem({ product }: { product: Product }) {
-  const router =useRouter()
+  const router = useRouter();
+  //add to wishlist
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending, isSuccess, isError,error } = useMutation({
+    mutationFn: addToWishListAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishItems"] });
+    },
+  });
+
   return (
+    <>
+    {isSuccess&&<SuccessMessage message="product added successfully to wish list"/>}
+    {isError&&<ErrorMessage message={error.message}/>}
     <div className="m-2">
       {/* Images */}
       <div className="flex justify-center">
@@ -21,7 +38,10 @@ export default function ProductItem({ product }: { product: Product }) {
         >
           {product?.images?.map((img) => (
             <SwiperSlide key={img}>
-              <div className="cursor-pointer flex justify-center items-center w-[180px] h-[200px]" onClick={() => router.push(`products/${product._id}`)}>
+              <div
+                className="cursor-pointer flex justify-center items-center w-[180px] h-[200px]"
+                onClick={() => router.push(`products/${product._id}`)}
+              >
                 <Image
                   src={img}
                   alt="Product image"
@@ -48,8 +68,18 @@ export default function ProductItem({ product }: { product: Product }) {
 
       <div className="flex justify-between items-center text-2xl mt-2">
         <AddToCartBtn productId={product._id} width="w-[140px]" />
-        <i className="fa-regular fa-heart text-2xl text-gray-600 hover:fa-solid hover:text-red-500 cursor-pointer"></i>
+        <div>
+          {isPending ? (
+            <i className="fa-solid fa-spin fa-spinner"></i>
+          ) : (
+            <i
+              onClick={() => mutate(product._id)}
+              className="fa-regular fa-heart text-2xl text-gray-600 hover:fa-solid hover:text-red-500 cursor-pointer"
+            ></i>
+          )}
+        </div>
       </div>
     </div>
+    </>
   );
 }
