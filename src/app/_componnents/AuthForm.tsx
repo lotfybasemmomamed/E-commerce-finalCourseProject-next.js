@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
-
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,8 +18,11 @@ import { loginSchema } from "../_schemas/loginSchema";
 import { registerSchema } from "../_schemas/RegisterSchema";
 import z from "zod";
 import ErrorMessage from "./puplicComponents/ErrorMesage";
+import Link from "next/link";
+import axios from "axios";
 
 export default function AuthForm({ type }: { type: string }) {
+  const baseUrl="https://ecommerce.routemisr.com/api/v1"
   const schema = type === "login" ? loginSchema : registerSchema;
   const formTitle = type === "login" ? "Login Now" : "Register Now";
   const _defaultValue =
@@ -30,6 +33,22 @@ export default function AuthForm({ type }: { type: string }) {
     resolver: zodResolver(schema),
     defaultValues: _defaultValue,
   });
+
+  // register mutation
+  const registerMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof registerSchema>) => {
+      const res = await axios.post(`${baseUrl}/auth/signup`, data);
+      return res.data;
+    },
+    onSuccess: async (data, variables) => {
+      await signIn("credentials", {
+        redirect: false,
+        email: variables.email,
+        password: variables.password,
+      });
+      window.location.pathname = "/";
+    },
+  });
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     if (type === "login") {
       const result = await signIn("credentials", {
@@ -37,6 +56,7 @@ export default function AuthForm({ type }: { type: string }) {
         email: data.email,
         password: data.password,
       });
+
       // console.log(result)
       if (result?.error) {
         return <ErrorMessage message={result.error} />;
@@ -44,9 +64,15 @@ export default function AuthForm({ type }: { type: string }) {
         window.location.pathname = "/";
       }
     }
+    if (type === "register") {
+      registerMutation.mutate(data as z.infer<typeof registerSchema>);
+    }
   }
   return (
-    <div className="container p-5 rounded max-w-[80%] md:my-9 m-5 bg-gray-100">
+    <>
+    {registerMutation.isError&&<ErrorMessage message={registerMutation.error.message}/>}
+   
+    <div className="container  p-5 rounded max-w-[80%] mt-24 md:mb-9 m-5 bg-gray-100">
       <h1 className="pb-5">{formTitle}</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
@@ -135,13 +161,29 @@ export default function AuthForm({ type }: { type: string }) {
               />
             </>
           )}
-          <div className="flex justify-end">
-            <Button className="btn" type="submit">
-              Submit
+          <div className="flex justify-end flex-col items-end">
+            <Button className="btn w-full" type="submit">
+              {registerMutation.isPending?<i className="fa-solid fa-spin fa-spinner "></i>:"Submit"}
+              
             </Button>
+            {type === "login" && (
+              <p className="mt-2 text-sm text-gray-600">
+                Don't have an account?
+                <Link
+                  href="/register"
+                  className="text-main font-medium hover:underline"
+                >
+                  Register Now
+                </Link>
+              </p>
+            )}
           </div>
         </form>
       </Form>
     </div>
+     </>
   );
 }
+
+
+
