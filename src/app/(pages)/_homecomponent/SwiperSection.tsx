@@ -1,7 +1,7 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
+import { Autoplay  } from "swiper/modules";
 import Image from "next/image";
 import slider1 from "../../../../public/images/slider-image-1.jpeg";
 import slider2 from "../../../../public/images/slider-image-2.jpeg";
@@ -18,8 +18,9 @@ export default function SwiperSection() {
         <Swiper
           spaceBetween={0}
           slidesPerView={1}
-          pagination={{ clickable: true }}
-          modules={[Pagination]}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
+
+          modules={[Autoplay]} 
         >
           <SwiperSlide>
             <Image

@@ -124,7 +124,7 @@ export default function Cart() {
               <span>Total</span>
               <span>${(total + 20).toFixed(2)}</span>
             </div>
-            <button className="w-full bg-main hover:bg-green-600 text-white py-2 rounded mt-4">
+            <button onClick={()=>window.location.pathname=`/checkout/${cartData.cartId}`} className="w-full bg-main hover:bg-green-600 text-white py-2 rounded mt-4">
               Checkout
             </button>
           </div>
