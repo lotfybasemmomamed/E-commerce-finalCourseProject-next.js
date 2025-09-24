@@ -20,9 +20,12 @@ import z from "zod";
 import ErrorMessage from "./puplicComponents/ErrorMesage";
 import Link from "next/link";
 import axios from "axios";
+import { useState } from "react";
 
 export default function AuthForm({ type }: { type: string }) {
   const baseUrl="https://ecommerce.routemisr.com/api/v1"
+  const [isLoading, setIsLoading] = useState(false);
+
   const schema = type === "login" ? loginSchema : registerSchema;
   const formTitle = type === "login" ? "Login Now" : "Register Now";
   const _defaultValue =
@@ -50,6 +53,7 @@ export default function AuthForm({ type }: { type: string }) {
     },
   });
   async function onSubmit(data: z.infer<typeof loginSchema>) {
+    setIsLoading(true);
     if (type === "login") {
       const result = await signIn("credentials", {
         redirect: false,
@@ -59,14 +63,18 @@ export default function AuthForm({ type }: { type: string }) {
 
       // console.log(result)
       if (result?.error) {
+        setIsLoading(false);
         return <ErrorMessage message={result.error} />;
       } else if (result?.ok) {
         window.location.pathname = "/";
       }
     }
-    if (type === "register") {
-      registerMutation.mutate(data as z.infer<typeof registerSchema>);
-    }
+     if (type === "register") {
+    registerMutation.mutate(data as z.infer<typeof registerSchema>, {
+      onSettled: () => setIsLoading(false), 
+    });
+  }
+
   }
   return (
     <>
@@ -163,7 +171,7 @@ export default function AuthForm({ type }: { type: string }) {
           )}
           <div className="flex justify-end flex-col items-end">
             <Button className="btn w-full" type="submit">
-              {registerMutation.isPending?<i className="fa-solid fa-spin fa-spinner "></i>:"Submit"}
+              {isLoading?<i className="fa-solid fa-spin fa-spinner "></i>:"Submit"}
               
             </Button>
             {type === "login" && (

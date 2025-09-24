@@ -15,9 +15,13 @@ import { WishListRoot } from "@/app/_types/wishlist";
 import SuccessMessage from "./SuccessMessage";
 import ErrorMessage from "./ErrorMesage";
 import removeWishListItemAction from "@/app/(pages)/wishlist/_actions/removeWishListItemAction";
+import { signOut } from "next-auth/react";
+
 
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+    const [show, setShow] = useState(false);
+
   const pathName = usePathname();
   const links = [
     { to: "/products", label: "Products" },
@@ -29,6 +33,7 @@ export default function NavBar() {
   console.log("session", session);
 
   return (
+    <>
     <nav className="bg-gray-100 border-gray-200 right-0 left-0 dark:bg-gray-900 fixed top-0 z-[10000] ">
       <div className="container max-w-screen-xl  flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex gap-8 items-center">
@@ -74,6 +79,14 @@ export default function NavBar() {
               </span>
               <div className="flex justify-center">
                 <Button
+                   onClick={()=>{
+              if(session?.user?.name){
+                setShow((prev)=>!prev)
+                return
+              }
+              window.location.pathname="/login"
+
+            }}
                   className={`${
                     session?.user?.name
                       ? "bg-red-500 hover:bg-red-400"
@@ -81,10 +94,10 @@ export default function NavBar() {
                   } w-[100px]  font-medium cursor-pointer`}
                 >
                   {session?.user?.name ? (
-                    <>
+                    <div >
                       <i className="fa-solid fa-arrow-right-from-bracket"></i>
                       Sign Out
-                    </>
+                    </div>
                   ) : (
                     <>
                       <i className="fa-solid fa-right-to-bracket"></i>
@@ -95,6 +108,7 @@ export default function NavBar() {
               </div>
             </div>
           </div>
+         
         </div>
         {/* social & login icons & CartWishlistIcons  in labtop  */}
         <div className="flex gap-4 md:order-2 space-x-3  md:space-x-0 rtl:space-x-reverse">
@@ -106,18 +120,26 @@ export default function NavBar() {
             <i className="fa-brands fa-linkedin hover:text-blue-600 cursor-pointer"></i>
             <i className="fa-brands fa-youtube hover:text-red-600 cursor-pointer"></i>
           </span>
-          <div className="flex gap-5">
+          <div className="flex gap-5 ">
             <CartWishlistIcons />
             <Button
+            onClick={()=>{
+              if(session?.user?.name){
+                setShow((prev)=>!prev)
+                return
+              }
+              window.location.pathname="/login"
+
+            }}
               className={`${
                 session?.user?.name
                   ? "bg-red-500 hover:bg-red-400"
                   : "bg-main hover:bg-green-600"
-              } ml-auto font-medium cursor-pointer`}
+              } hidden lg:flex ml-auto font-medium cursor-pointer`}
             >
               {session?.user?.name ? (
                 <>
-                  <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                  <i  className="fa-solid fa-arrow-right-from-bracket"></i>
                   Sign Out
                 </>
               ) : (
@@ -155,7 +177,9 @@ export default function NavBar() {
           </button>
         </div>
       </div>
+      {show&&<ConfirmSignOutModel setShow={setShow}/>} 
     </nav>
+    </>
   );
 }
 
@@ -368,7 +392,7 @@ function CartWishlistIcons() {
                     <button
                       onClick={() => {
                         setDeletingWishListItemId(item._id)
-                        deletedWishListItemMutate(item.id)
+                        deletedWishListItemMutate(item._id)
                       }}
                       className="text-red-500 hover:text-red-700 cursor-pointer"
                     >
@@ -392,5 +416,45 @@ function CartWishlistIcons() {
       </div>
     </div>
      </>
+  );
+}
+
+
+
+ function ConfirmSignOutModel({ setShow }: { setShow: React.Dispatch<React.SetStateAction<boolean>> }) {
+    const [isLoading, setIsLoading] = useState(false);
+
+
+  return (
+   <>
+  
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-[90%] max-w-sm text-center">
+        <h2 className="text-lg font-semibold mb-3">Sign Out Confirmation</h2>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to sign out from the store?
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => setShow(false)}
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              setIsLoading(true)
+signOut({ callbackUrl: "/" })
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+          {isLoading?<i className="fa-solid fa-spin fa-spinner"></i>:"Yes, Sign Out"}  
+          </button>
+        </div>
+      </div>
+    </div>
+
+</>
+
   );
 }
