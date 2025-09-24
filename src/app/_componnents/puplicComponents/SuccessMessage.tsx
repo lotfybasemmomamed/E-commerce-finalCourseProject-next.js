@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-export default function ErrorMessage({ message }: { message: string }) {
+export default function SuccessMessage({ message }: { message: string }) {
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {

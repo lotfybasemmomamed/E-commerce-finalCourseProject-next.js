@@ -7,12 +7,15 @@ import logo from "../../../../public/images/freshcart-logo.svg";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import CartItemQuentity from "@/app/(pages)/cart/_component/CartItemQuantity";
+import { RootCart } from "@/app/_types/cart";
+import axios, { AxiosError } from "axios";
+import { useQuery,useQueryClient,useMutation } from "@tanstack/react-query";
+import removeCartItemAction from "@/app/(pages)/cart/_actions/removeCartItemAction";
+
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathName = usePathname();
   const links = [
-    { to: "/", label: "Home" },
-    { to: "/cart", label: "Cart" },
     { to: "/products", label: "Products" },
     { to: "/categories", label: "Categories" },
     { to: "/brands", label: "Brands" },
@@ -91,7 +94,6 @@ export default function NavBar() {
         </div>
         {/* social & login icons & CartWishlistIcons  in labtop  */}
         <div className="flex gap-4 md:order-2 space-x-3  md:space-x-0 rtl:space-x-reverse">
-          
           <span className="hidden  shadow lg:flex items-center gap-x-6 px-4 py-2 rounded-lg">
             <i className="fa-brands fa-instagram hover:text-pink-500 cursor-pointer"></i>
             <i className="fa-brands fa-facebook hover:text-blue-500 cursor-pointer"></i>
@@ -99,8 +101,8 @@ export default function NavBar() {
             <i className="fa-brands fa-x-twitter hover:text-gray-400 cursor-pointer"></i>
             <i className="fa-brands fa-linkedin hover:text-blue-600 cursor-pointer"></i>
             <i className="fa-brands fa-youtube hover:text-red-600 cursor-pointer"></i>
-            </span>
-            <div className="flex gap-5">
+          </span>
+          <div className="flex gap-5">
             <CartWishlistIcons />
             <Button
               className={`${
@@ -121,9 +123,8 @@ export default function NavBar() {
                 </div>
               )}
             </Button>
-            </div>
-          
-          
+          </div>
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             type="button"
@@ -154,31 +155,54 @@ export default function NavBar() {
   );
 }
 
+interface ApiError {
+  error?: string;
+}
 function CartWishlistIcons() {
   type Item = {
     id: number;
     name: string;
     image: string;
     price: number;
-    qty:number
+    qty: number;
   };
+  //get cart items
+  const {
+    data: cartData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<RootCart>({
+    queryKey: ["cartItems"],
+    queryFn: async () => {
+      try {
+        const res = await axios.get("/api/cart", { withCredentials: true });
+        return res.data;
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          const apiError = err as AxiosError<ApiError>;
+          throw new Error(
+            apiError.response?.data?.error ||
+              apiError.message ||
+              "Unknown error"
+          );
+        }
+        throw new Error("Unknown error");
+      }
+    },
+    refetchOnWindowFocus: false,
+  });
 
-  const [cartItems, setCartItems] = useState<Item[]>([
-    {
-      id: 1,
-      name: "Product 1",
-      image: "/images/slider-image-1.jpeg",
-      price: 120,
-      qty: 1,
+ // delete cart item
+   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+   const queryClient = useQueryClient();
+  const { mutate:deletedMutate, isPending:isDeletedPending, isSuccess:isDeletedSuccessed, error:deletedError } = useMutation({
+    mutationFn: removeCartItemAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cartItems"] });
     },
-    {
-      id: 2,
-      name: "Product 2",
-      image: "/images/slider-image-2.jpeg",
-      price: 200,
-      qty: 2,
-    },
-  ]);
+  });
 
   const [wishlistItems, setWishlistItems] = useState<Item[]>([
     {
@@ -186,48 +210,28 @@ function CartWishlistIcons() {
       name: "Wishlist 1",
       image: "/images/slider-image-3.jpeg",
       price: 300,
-       qty: 1,
+      qty: 1,
     },
     {
       id: 1,
       name: "Wishlist 1",
       image: "/images/slider-image-3.jpeg",
       price: 300,
-       qty: 1,
+      qty: 1,
     },
     {
       id: 1,
       name: "Wishlist 1",
       image: "/images/slider-image-3.jpeg",
       price: 300,
-       qty: 1,
+      qty: 1,
     },
   ]);
 
   const [showCart, setShowCart] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
 
-  const handleRemoveCart = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
 
-  const handleIncrease = (id: number) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, qty: (item.qty || 1) + 1 } : item
-      )
-    );
-  };
-
-  const handleDecrease = (id: number) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id && (item.qty || 1) > 1
-          ? { ...item, qty: (item.qty || 1) - 1 }
-          : item
-      )
-    );
-  };
 
   const handleRemoveWishlist = (id: number) => {
     setWishlistItems(wishlistItems.filter((item) => item.id !== id));
@@ -243,34 +247,42 @@ function CartWishlistIcons() {
         <Link href="/cart" className="relative">
           <i className="fa-solid fa-cart-shopping text-xl cursor-pointer"></i>
           <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full px-1">
-            {cartItems.length}
+            {cartData?.data.products?.length }
           </span>
         </Link>
         {showCart && (
-          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
-            {cartItems.length > 0 ? (
-              cartItems.map((item) => (
+          
+           <div className="absolute right-0">
+          <div className=" mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
+            {cartData?.data?.products &&cartData?.data.products?.length > 0 ? (
+              cartData?.data.products?.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.product._id}
                   className="flex items-center gap-3 p-2 border-b last:border-0"
                 >
                   <Image
-                    src={item.image}
-                    alt={item.name}
+                    src={item.product.imageCover}
+                    alt={item.product.title}
                     width={40}
                     height={40}
                     className="rounded"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
+                    <p className="text-sm font-medium truncate max-w-[200px]">{item.product.title}</p>
                     <p className="text-xs text-gray-500">${item.price}</p>
-                    <CartItemQuentity count={item.qty}/>
+                    <CartItemQuentity
+                      initialCount={item.count}
+                      productId={item.product._id}
+                    />
                   </div>
                   <button
-                    onClick={() => handleRemoveCart(item.id)}
+                     onClick={() => {
+                      setDeletingId(item.product._id)
+                      deletedMutate(item.product._id)
+                    }}
                     className="text-red-500 hover:text-red-700"
                   >
-                    <i className="fa-solid fa-trash"></i>
+                  {isDeletedPending&&item.product._id===deletingId?<i className="fa-solid fa-spin fa-spinner"></i>:<i className="fa-solid fa-trash"></i>}  
                   </button>
                 </div>
               ))
@@ -284,8 +296,10 @@ function CartWishlistIcons() {
               View Cart
             </Link>
           </div>
+           </div> 
         )}
       </div>
+     
 
       <div
         className="relative"
@@ -299,7 +313,8 @@ function CartWishlistIcons() {
           </span>
         </Link>
         {showWishlist && (
-          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
+          <div className="absolute right-0">
+          <div className="mt-2 w-80 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 z-50">
             {wishlistItems.length > 0 ? (
               wishlistItems.map((item) => (
                 <div
@@ -334,6 +349,7 @@ function CartWishlistIcons() {
             >
               View Wishlist
             </Link>
+          </div>
           </div>
         )}
       </div>

@@ -1,41 +1,44 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import addToVCartAction from "../_actions/addToCartAction";
+import ErrorMessage from "@/app/_componnents/puplicComponents/ErrorMesage";
+import SuccessMessage from "@/app/_componnents/puplicComponents/SuccessMessage";
 
-export default function AddToCartBtn({ productId, width = "", height = "" }: { productId: string, width?: string, height?: string }) {
+export default function AddToCartBtn({
+  productId,
+  width = "",
+  height = "",
+}: {
+  productId: string;
+  width?: string;
+  height?: string;
+}) {
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const res = await axios.post("/api/cart", { productId, count: 1 });
-      return res.data;
-    },
+  const { mutate, isPending, isSuccess, error } = useMutation({
+    mutationFn: addToVCartAction,
     onSuccess: () => {
-      // بعد إضافة المنتج للكارت، يحدث استعلام الكارت تلقائياً
-      queryClient.invalidateQueries(["cartItems"]);
+      queryClient.invalidateQueries({ queryKey: ["cartItems"] });
     },
-    onError: (err) => {
-      console.error("Add to cart error:", err);
-    },
+   
   });
 
-  const handleAddToCart = () => {
-    setLoading(true);
-    mutation.mutate(undefined, {
-      onSettled: () => setLoading(false),
-    });
-  };
-
   return (
-    <Button 
-      onClick={handleAddToCart} 
-      className={`${width} ${height} btn px-4 py-2 rounded`}
-      disabled={loading || mutation.isLoading}
-    >
-      {loading || mutation.isLoading ? <i className="fa-solid sa-spin fa-spinner"></i> : "Add to Cart"}
-    </Button>
+    <>
+      {isSuccess && <SuccessMessage message="Product added successfully" />}
+      {error && <ErrorMessage message={error.message} />}
+
+      <Button
+        onClick={() => mutate(productId)}
+        className={`${width} ${height} btn px-4 py-2 rounded`}
+      >
+        {isPending ? (
+          <i className="fa-solid fa-spin fa-spinner"></i>
+        ) : (
+          "Add to Cart"
+        )}
+      </Button>
+    </>
   );
 }

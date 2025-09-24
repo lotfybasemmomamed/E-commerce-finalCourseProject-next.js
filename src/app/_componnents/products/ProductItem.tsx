@@ -41,7 +41,7 @@ export default function ProductItem({ product }: { product: Product }) {
       <div className="flex justify-between items-center mt-2">
         <p>{product.price} EGP</p>
         <div className="flex justify-between items-center gap-0.5">
-          <i className="fa-solid fa-star text-rating"></i>{" "}
+          <i className="fa-solid fa-star text-rating"></i>
           {product.ratingsAverage}({product.ratingsQuantity})
         </div>
       </div>

@@ -3,10 +3,10 @@ import axios from "axios";
 const baseUrl = "https://ecommerce.routemisr.com/api/v1";
 
 
-export const getCartItems = async (token:string) => {
+export const getWhishlistItems = async (token:string) => {
 
   return axios.get(
-    `${baseUrl}/cart`,
+    `${baseUrl}/wishlist`,
     {
       headers: {
         token: token as string,
@@ -14,12 +14,12 @@ export const getCartItems = async (token:string) => {
     }
   ).then(res=>res.data)
 };
-export const addToCart=(productId:string ,token:string)=>axios.post(`${baseUrl}/cart`,{productId:productId}, {
+export const addToWhishList=(productId:string ,token:string)=>axios.post(`${baseUrl}/wishlist`,{productId:productId}, {
       headers: {
         token: token as string,
       },
     }).then((res) => res.data);
-export const deletCartItem=(productId:string ,token:string)=>axios.delete(`${baseUrl}/cart/${productId}`, {
+export const deletWhishListItem=(productId:string ,token:string)=>axios.delete(`${baseUrl}/wishlist/${productId}`, {
       headers: {
         token: token as string,
       },

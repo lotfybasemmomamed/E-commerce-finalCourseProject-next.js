@@ -2,54 +2,70 @@
 import ErrorMessage from "@/app/_componnents/puplicComponents/ErrorMesage";
 import Loading from "@/app/_componnents/puplicComponents/Loading";
 import { RootCart } from "@/app/_types/cart";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import CartItemQuentity from "./CartItemQuantity";
+import axios, { AxiosError } from "axios";
+import removeCartItemAction from "../_actions/removeCartItemAction";
+import SuccessMessage from "@/app/_componnents/puplicComponents/SuccessMessage";
+import { useState } from "react";
 
-
+interface ApiError {
+  error?: string;
+}
 
 export default function Cart() {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-
- const {
+  const {
     data: cartData,
     isLoading,
     isError,
     error,
-  } = useQuery<RootCart[]>({
+  } = useQuery<RootCart>({
     queryKey: ["cartItems"],
+
     queryFn: async () => {
-      const res = await fetch("/api/cart", { 
-        credentials: "include",
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json'
+      try {
+        const res = await axios.get("/api/cart", { withCredentials: true });
+        return res.data;
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          const apiError = err as AxiosError<ApiError>;
+          throw new Error(
+            apiError.response?.data?.error ||
+              apiError.message ||
+              "Unknown error"
+          );
         }
-      }); 
-      
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
+        throw new Error("Unknown error");
       }
-      const response =await res.json()
-    //   const data=response.data
-      return response
     },
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
-console.log(cartData)
+  //delete cart item
+  const queryClient = useQueryClient();
+
+  const { mutate:deletedMutate, isPending:isDeletedPending, isSuccess:isDeletedSuccessed, error:deletedError } = useMutation({
+    mutationFn: removeCartItemAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cartItems"] });
+    },
+  });
+  console.log(cartData);
   if (isLoading) return <Loading />;
   if (isError) return <ErrorMessage message={error.message} />;
- 
 
-
-const total =cartData?.data?.totalCartPrice
+  const total = cartData?.data?.totalCartPrice;
 
   return (
+    <>
+    {isDeletedSuccessed&&<SuccessMessage message="product deleted successfully"/>}
+    {deletedError&&<ErrorMessage message={deletedError?.message}/>}
     <div className="container mx-auto mt-20 px-4 py-10">
       <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
 
-      {cartData?.data?.products?.length>0 ? (
+      {cartData?.data?.products &&cartData?.data?.products?.length > 0 ? (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Cart Items */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
@@ -60,7 +76,7 @@ const total =cartData?.data?.totalCartPrice
               >
                 <Image
                   src={item.product.imageCover}
-                  alt={item.name}
+                  alt={item.product.title}
                   width={80}
                   height={80}
                   className="rounded"
@@ -69,8 +85,10 @@ const total =cartData?.data?.totalCartPrice
                   <h2 className="font-medium">{item.product.title}</h2>
                   <p className="text-gray-500">{item.price} EGP</p>
 
-                  <CartItemQuentity initialCount={item.count} productId={item.product._id}/>
-
+                  <CartItemQuentity
+                    initialCount={item.count}
+                    productId={item.product._id}
+                  />
                 </div>
 
                 <div className="text-right">
@@ -78,10 +96,13 @@ const total =cartData?.data?.totalCartPrice
                     ${(item.price * item.count).toFixed(2)}
                   </p>
                   <button
-                    // onClick={() => handleRemove(item.id)}
-                    className="text-red-500 hover:text-red-700 text-sm mt-2"
+                    onClick={() => {
+                      setDeletingId(item.product._id)
+                      deletedMutate(item.product._id)
+                    }}
+                    className="text-red-500 min-w-[50px] hover:text-red-700 text-sm mt-2 cursor-pointer"
                   >
-                    <i className="fa-solid fa-trash"></i> Remove
+                   {isDeletedPending&&item.product._id===deletingId?<i className="fa-solid fa-spin fa-spinner text-center text-black"></i>:<><i className="fa-solid fa-trash"></i> Remove</>} 
                   </button>
                 </div>
               </div>
@@ -109,10 +130,11 @@ const total =cartData?.data?.totalCartPrice
           </div>
         </div>
       ) : (
-        <p className="text-center text-lg">
+        <p className="text-center text-lg min-h-[90vh]">
           Your cart is empty <i className="fa-solid fa-cart-shopping"></i>
         </p>
       )}
     </div>
+    </>
   );
 }

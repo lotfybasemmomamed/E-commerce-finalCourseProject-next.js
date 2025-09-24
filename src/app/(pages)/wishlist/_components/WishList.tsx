@@ -9,7 +9,7 @@ type Item = {
   price: number;
 };
 
-export default function WishlistPage() {
+export default function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState<Item[]>([
     {
       id: 1,
